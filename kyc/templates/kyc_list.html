@@ -1,0 +1,763 @@
+
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-id-card me-2 text-primary"></i>KYC Records
+                </h4>
+                <div>
+                    <a href="{% url 'kyc:kyc_create' %}" class="btn btn-primary btn-sm rounded-pill">
+                        <i class="fas fa-plus me-1"></i> Create New
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Filters and Search -->
+            <div class="row mb-3 g-2">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Search records..." id="kycSearch">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select form-select-sm" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-4 text-md-end"><div class="btn-group shadow-sm" role="group">
+    <button type="button" class="btn btn-light btn-sm dropdown-toggle border" data-bs-toggle="dropdown">
+        <i class="fas fa-sort me-1"></i>
+        {% if order_by == 'kyc_id' %}KYC ID
+        {% elif order_by == 'first_name' %}First Name
+        {% elif order_by == 'last_name' %}Last Name
+        {% elif order_by == 'date_of_birth_ad' %}Date of Birth
+        {% elif order_by == 'gender' %}Gender
+        {% else %}Sort By{% endif %}
+        <span class="badge bg-secondary ms-1">
+            {% if order_dir == 'asc' %}A-Z{% else %}Z-A{% endif %}
+        </span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+    <a class="dropdown-item {% if order_by == 'created_date' %}active{% endif %}" 
+       href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=created_date&order_dir={% if order_by == 'created_date' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}desc{% endif %}">
+        <i class="far fa-calendar-plus me-2"></i>Created Date
+        {% if order_by == 'created_date' %}
+            <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+        {% endif %}
+    </a>
+</li>
+<li>
+    <a class="dropdown-item {% if order_by == 'updated_date' %}active{% endif %}" 
+       href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=updated_date&order_dir={% if order_by == 'updated_date' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}desc{% endif %}">
+        <i class="far fa-calendar-check me-2"></i>Updated Date
+        {% if order_by == 'updated_date' %}
+            <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+        {% endif %}
+    </a>
+</li>
+        <li><h6 class="dropdown-header">Sort By</h6></li>
+        
+        <!-- KYC ID -->
+        <li>
+            <a class="dropdown-item {% if order_by == 'kyc_id' %}active{% endif %}" 
+               href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=kyc_id&order_dir={% if order_by == 'kyc_id' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}">
+                <i class="fas fa-id-badge me-2"></i>KYC ID
+                {% if order_by == 'kyc_id' %}
+                    <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+                {% endif %}
+            </a>
+        </li>
+        
+        <!-- First Name -->
+        <li>
+            <a class="dropdown-item {% if order_by == 'first_name' %}active{% endif %}" 
+               href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=first_name&order_dir={% if order_by == 'first_name' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}">
+                <i class="fas fa-user me-2"></i>First Name
+                {% if order_by == 'first_name' %}
+                    <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+                {% endif %}
+            </a>
+        </li>
+        
+        <!-- Last Name -->
+        <li>
+            <a class="dropdown-item {% if order_by == 'last_name' %}active{% endif %}" 
+               href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=last_name&order_dir={% if order_by == 'last_name' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}">
+                <i class="fas fa-user me-2"></i>Last Name
+                {% if order_by == 'last_name' %}
+                    <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+                {% endif %}
+            </a>
+        </li>
+        
+        <li><hr class="dropdown-divider"></li>
+        
+        <!-- Date of Birth -->
+        <li>
+            <a class="dropdown-item {% if order_by == 'date_of_birth_ad' %}active{% endif %}" 
+               href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=date_of_birth_ad&order_dir={% if order_by == 'date_of_birth_ad' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}">
+                <i class="fas fa-birthday-cake me-2"></i>Date of Birth
+                {% if order_by == 'date_of_birth_ad' %}
+                    <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+                {% endif %}
+            </a>
+        </li>
+        
+        <!-- Gender -->
+        <li>
+            <a class="dropdown-item {% if order_by == 'gender' %}active{% endif %}" 
+               href="?{% if search_term %}search={{ search_term }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}order_by=gender&order_dir={% if order_by == 'gender' %}{% if order_dir == 'asc' %}desc{% else %}asc{% endif %}{% else %}asc{% endif %}">
+                <i class="fas fa-venus-mars me-2"></i>Gender
+                {% if order_by == 'gender' %}
+                    <i class="fas fa-sort-{% if order_dir == 'asc' %}up{% else %}down{% endif %} float-end"></i>
+                {% endif %}
+            </a>
+        </li>
+    </ul>
+</div>
+            </div>
+
+         <!-- Records Count, Pagination, and Export -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-row mb-3">
+        <!-- Records Count -->
+        <div class="alert py-2 mb-0">
+            <small class="text-muted">
+                <i class="fas fa-info-circle me-1"></i> Showing <strong>{{ kycs.start_index }} to {{ kycs.end_index }}</strong> of <strong>{{ total_records }}</strong> records
+            </small>
+        </div>
+
+   
+   <div class="d-flex gap-1">
+{% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if kycs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{{ query_string }}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ kycs.previous_page_number }}{{ query_string }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in kycs.paginator.page_range %}
+                {% if kycs.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num > kycs.number|add:'-3' and num < kycs.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{{ query_string }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if kycs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ kycs.next_page_number }}{{ query_string }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ kycs.paginator.num_pages }}{{ query_string }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+        {% comment %} <p class="text-center text-muted small mt-2">
+            Page {{ kycs.number }} of {{ kycs.paginator.num_pages }}
+        </p> {% endcomment %}
+    </nav>
+    {% endif %}
+</div>
+</div>
+
+<div class="btn-group">
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fas fa-tasks me-1"></i> Bulk Actions
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#" id="bulkDeleteBtn"><i class="fas fa-trash-alt me-2 text-danger"></i> Delete Selected</a></li>
+    </ul>
+</div>
+
+    <!-- Export Button -->
+    <div>
+        <button class="btn btn-sm btn-outline-secondary" id="exportBtn">
+            <i class="fas fa-download me-1"></i> Export
+        </button>
+    </div>
+</div>
+
+            <!-- Records Table -->
+            <div class="table-responsive rounded">
+                <table class="table table-hover align-middle mb-0" id="kycTable">
+                    <thead class="table-light">
+                        <tr>
+                             <th width="50">
+            <input type="checkbox" id="selectAll">
+        </th>
+                            <th width="100">KYC ID</th>
+                            <th>Full Name</th>
+                            <th width="100">Gender</th>
+                            <th width="110">DOB (AD)</th>
+                            <th width="100">Document</th>
+                            <th width="120">Contact</th>
+                            <th width="150">Created Date</th>
+                            <th width="150">Updated Date</th>
+                            <th width="100">Status</th>
+                            <th width="80">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kyc in kycs %}
+                        <tr class="position-relative">
+                            <td> 
+                                <input type="checkbox" class="row-checkbox" data-id="{{ kyc.kyc_id }}">
+                            
+                            </td>
+                            <td data-label="KYC ID">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">#{{ kyc.kyc_id|default:"-" }}</span>
+                            </td>
+                            <td data-label="Full Name">
+                                <div class="d-flex align-items-center">
+          
+                                    <div>
+                                        <h6 class="mb-0">{{ kyc.salutation }} {{ kyc.first_name }} 
+                                            {% if kyc.middle_name %}{{ kyc.middle_name }} {% endif %}
+                                            {{ kyc.last_name }}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Gender">
+                                {% if kyc.gender == 'Male' %}
+                                    <span class="badge bg-info bg-opacity-10 text-info">
+                                        <i class="fas fa-mars me-1"></i> {{ kyc.gender }}
+                                    </span>
+                                {% elif kyc.gender == 'Female' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">
+                                        <i class="fas fa-venus me-1"></i> {{ kyc.gender }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        <i class="fas fa-genderless me-1"></i> {{ kyc.gender|default:"-" }}
+                                    </span>
+                                {% endif %}
+                            </td>
+             
+                            <td data-label="DOB (AD)">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar me-1"></i> {{ kyc.date_of_birth_ad|date:"Y-m-d"|default:"-" }}
+                                </small>
+                            </td>
+                            <td data-label="Document">
+                                <small>
+                                    <div><strong>{{ kyc.document_type }}</strong></div>
+                                    <div class="text-muted">{{ kyc.document_number|default:"-" }}</div>
+                                </small>
+                            </td>
+                            <td data-label="Contact">
+                                <small>
+                                    <div><i class="fas fa-phone me-1"></i> {{ kyc.mobile|default:"-" }}</div>
+                                    <div class="text-truncate" style="max-width: 150px;">
+                                        <i class="fas fa-envelope me-1"></i> {{ kyc.email|default:"-" }}
+                                    </div>
+                                </small>
+                            </td>
+                                                           <td data-label="Created">
+                    <div class="d-flex flex-column">
+                        <small class="text-muted">
+                            <i class="far fa-calendar-plus me-1"></i>
+                            {{ kyc.created_date|date:"Y-m-d" }}
+                        </small>
+                    </div>
+                </td>
+                <td data-label="Updated">
+                    <div class="d-flex flex-column">
+                        <small class="text-muted">
+                            <i class="far fa-calendar-check me-1"></i>
+                            {{ kyc.updated_date|date:"Y-m-d" }}
+                        </small>
+                        
+                    </div>
+                </td>
+                            <td data-label="Status">
+                                {% if kyc.status == 'approved' %}
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="fas fa-check-circle me-1"></i> Approved
+                                    </span>
+                                {% elif kyc.status == 'rejected' %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">
+                                        <i class="fas fa-times-circle me-1"></i> Rejected
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">
+                                        <i class="fas fa-hourglass-half me-1"></i> Pending
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Actions">
+                                <div class="d-flex">
+                                 <div class="btn-group" role="group">
+    <!-- View Button: Blue -->
+   <a href="{% url 'kyc:kyc_detail' kyc.kyc_id %}" class="btn btn-sm btn-outline-primary"
+       data-bs-toggle="tooltip" title="View Details">
+        <i class="fas fa-eye me-1"></i> View
+    </a>
+
+    <!-- Edit Button: Orange -->
+ <a href="{% url 'kyc:kyc_update' kyc.kyc_id %}" class="btn btn-sm btn-outline-warning">
+    <i class="fas fa-edit me-1"></i> Edit
+</a>
+
+    <!-- Delete Button: Red -->
+    <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+            data-id="{{ kyc.kyc_id }}" data-bs-toggle="tooltip" title="Delete Record">
+        <i class="fas fa-trash-alt me-1"></i> Delete
+    </button>
+</div>
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="py-5">
+                                    <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No KYC records found</h5>
+                                    <p class="text-muted">Click "Create New" to add your first KYC record</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+</div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Edit/Update Model-->
+
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="updateModalLabel">Confirm Update</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-primary fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="mb-1">You're about to update this KYC record. Please verify that all information is correct before proceeding.</p>
+                        <small class="text-muted">Last updated: {{ kyc.updated_at|date:"M d, Y H:i"|default:"Never" }}</small>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning p-2 mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <small>This action will require re-verification if sensitive fields are modified.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <form id="updateForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle me-2"></i>Confirm Update
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to set the correct form action -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const updateForm = document.getElementById('updateForm');
+    {% if kyc %}
+        updateForm.action = "{% url 'kyc:kyc_update' kyc.kyc_id %}";
+    {% else %}
+        // Handle list view case - perhaps set a data attribute on rows
+        document.querySelectorAll('.kyc-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const kycId = this.dataset.kycId;
+                updateForm.action = `/kyc/${kycId}/update/`;
+            });
+        });
+    {% endif %}
+});
+</script>
+<!-- Delete Confirmation Modal (for single record) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this KYC record? This action cannot be undone.</p>
+                <div class="alert alert-warning p-2 mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <small>This record will be permanently removed from the system.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancel
+                </button>
+                <form id="deleteForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i> Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Bulk Delete Confirmation Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="bulkDeleteModalLabel">Confirm Bulk Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to delete <span id="selectedCount">0</span> KYC record(s). This action cannot be undone.</p>
+                <div class="alert alert-warning p-2 mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <small>All selected records will be permanently removed from the system.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDelete">
+                    <i class="fas fa-trash-alt me-2"></i> Confirm Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Delete button handler for single deletion
+    var deleteButtons = document.querySelectorAll('.delete-btn');
+    var deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var kycId = this.getAttribute('data-id');
+                deleteForm.action = `/kyc/${kycId}/delete/`;
+                deleteModal.show();
+            });
+        });
+    }
+
+        // Bulk delete confirmation handler
+    document.getElementById('confirmBulkDelete')?.addEventListener('click', function() {
+        const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-id'));
+
+        
+        if (selectedIds.length === 0) {
+            alert('Please select at least one record to delete.');
+            return;
+        }
+
+        // Show loading state
+        const confirmBtn = this;
+        const originalBtnText = confirmBtn.innerHTML;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+        confirmBtn.disabled = true;
+
+        // Prepare the request
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        selectedIds.forEach(id => {
+            formData.append('kyc_ids[]', id);
+        });
+
+        // Send the request
+        fetch("{% url 'kyc:kyc_bulk_delete' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
+                modal.hide();
+                
+                // Reload the page to reflect changes
+                window.location.reload();
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        })
+        .finally(() => {
+            confirmBtn.innerHTML = originalBtnText;
+            confirmBtn.disabled = false;
+        });
+    });
+
+
+    // Search functionality
+    document.getElementById('searchBtn')?.addEventListener('click', function() {
+        const searchTerm = document.getElementById('kycSearch').value.toLowerCase();
+        filterTable(searchTerm);
+    });
+
+    document.getElementById('kycSearch')?.addEventListener('keyup', function(e) {
+        if(e.key === 'Enter') {
+            const searchTerm = this.value.toLowerCase();
+            filterTable(searchTerm);
+        }
+    });
+
+    // Status filter
+    document.getElementById('statusFilter')?.addEventListener('change', function() {
+        const status = this.value;
+        filterTableByStatus(status);
+    });
+
+    // Export to Excel
+    document.getElementById('exportBtn')?.addEventListener('click', exportToExcel);
+
+    // Bulk delete operation
+    const selectAll = document.getElementById('selectAll');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+
+    // Select all checkbox
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectAllState();
+        });
+    }
+
+    // Update individual checkboxes
+    document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAllState);
+    });
+
+    // Bulk delete button
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one record to delete.');
+                return;
+            }
+            
+            // Update modal display
+            document.getElementById('selectedCount').textContent = selectedIds.length;
+            
+            // Show confirmation modal
+            const bulkDeleteModal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+            bulkDeleteModal.show();
+        });
+    }
+
+    // Bulk delete form submission
+    if (bulkDeleteForm) {
+        bulkDeleteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+            
+            if (selectedIds.length === 0) {
+                alert('Please select at least one record to delete.');
+                return;
+            }
+
+            // Add CSRF token and selected IDs to form data
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            selectedIds.forEach(id => {
+                formData.append('kyc_ids', id);
+            });
+
+            // Show loading state
+            const submitBtn = bulkDeleteForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+            submitBtn.disabled = true;
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
+                    modal.hide();
+                    
+                    // Reload the page or update the table
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+
+    function updateSelectAllState() {
+        const allCheckboxes = document.querySelectorAll('.row-checkbox');
+        const selectAll = document.getElementById('selectAll');
+        
+        if (selectAll) {
+            const checkedCount = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+            selectAll.checked = checkedCount === allCheckboxes.length;
+            selectAll.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+        }
+    }
+});
+
+function filterTable(searchTerm) {
+    const rows = document.querySelectorAll('#kycTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+function filterTableByStatus(status) {
+    const rows = document.querySelectorAll('#kycTable tbody tr');
+    
+    if (!status) {
+        rows.forEach(row => row.style.display = '');
+        return;
+    }
+    
+    rows.forEach(row => {
+        const statusBadge = row.querySelector('td[data-label="Status"] span');
+        if (statusBadge) {
+            const rowStatus = statusBadge.textContent.toLowerCase().trim();
+            row.style.display = rowStatus.includes(status) ? '' : 'none';
+        }
+    });
+}
+
+function exportToExcel() {
+    const table = document.getElementById('kycTable');
+    const clone = table.cloneNode(true);
+    const headers = clone.querySelectorAll('th');
+    const rows = clone.querySelectorAll('tr');
+    
+    // Find and remove Actions column
+    let actionIndex = -1;
+    headers.forEach((th, index) => {
+        if (th.textContent.trim() === 'Actions') {
+            actionIndex = index;
+        }
+    });
+    
+    if (actionIndex !== -1) {
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td, th');
+            if (cells.length > actionIndex) {
+                row.removeChild(cells[actionIndex]);
+            }
+        });
+    }
+    
+    const ws = XLSX.utils.table_to_sheet(clone);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "KYC Records");
+    XLSX.writeFile(wb, "kyc_records.xlsx");
+}
+</script>
+{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- OR Bootstrap 4 (requires jQuery) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Font Awesome CSS (for icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
